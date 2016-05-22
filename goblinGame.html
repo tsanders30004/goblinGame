@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html>
+<head>
+     <meta charset="utf-8">
+     <title>Goblin Game</title>
+</head>
+
+<body>
+     <canvas id="myCanvas" width="512" height="480"></canvas>
+     ​
+     <script>
+     "use strict";
+
+     var theCanvas = document.getElementById('myCanvas');
+     var canvasContext = theCanvas.getContext("2d");
+
+     var heroImage = new Image();
+     heroImage.src = 'images/hero.png';
+
+     var monsterImage = new Image();
+     monsterImage.src = 'images/monster.png';
+
+     var goblin1Image = new Image();
+     goblin1Image.src = 'images/goblin.png';
+
+     var goblin2Image = new Image();
+     goblin2Image.src = 'images/goblin.png';
+
+     var myBackground = new Image();
+     myBackground.src = 'images/background.png';
+
+     var powImage = new Image();
+     powImage.src = 'images/monsterPow.png';
+
+     var canvasWidth = 512;
+     var canvasHeight = 480;
+     var avatarWidth = 32;
+     var avatarHeight = 32;
+     var powWidth = 70;
+     var powHeight = 53;
+
+     var heroX = 240;    /* these are the coordinates necessary to center the 32x32 hero on a 512x480 grid */
+     var heroY = 224;
+
+     var monsterX = getRandomCoordinates(canvasWidth, canvasHeight)[0];      /* random horizontal starting position of the monster */
+     var monsterY = getRandomCoordinates(canvasWidth, canvasHeight)[1];      /* random vertical starting position of the monster */
+
+     var goblin1x = getRandomCoordinates(canvasWidth, canvasHeight)[0];
+     var goblin1y = getRandomCoordinates(canvasWidth, canvasHeight)[1];
+
+     var goblin2x = getRandomCoordinates(canvasWidth, canvasHeight)[0];
+     var goblin2y = getRandomCoordinates(canvasWidth, canvasHeight)[1];
+
+     var wrapMonster;
+     var newMonsterX;
+     var newMonsterY;
+
+     var wrapGoblin1;
+     var newGoblin1X;
+     var newGoblin1Y;
+
+     var wrapGoblin2;
+     var newGoblin2X;
+     var newGoblin2Y;
+
+     var speed = 25;
+
+     var loopNumber = 1;
+
+     var directionMonster = 3;
+     var directionGoblin1 = 3;
+     var directionGoblin2 = 3;
+
+     var monsterSpeed = 5;
+     var goblinSpeed = 3;
+
+     var score = 0;
+     var maxScore = 0;
+
+     var shoutStatus = false;
+     var shoutCounter = 0;
+     var bummerStatus1 = false;
+     var bummerCounter1 = 0;
+     var bummerStatus2 = false;
+     var bummerCounter2 = 0;
+     var messageMaxLoops = 100;
+
+     var powCount = 0;
+     var powMax = 20;
+     var powStatus = false;
+
+     function wrapOccured (cW, cH, aW, aH, x, y) {
+          /*   determines if the avatar of height (aH) and width (aW) at position x and y has scrolled of a cW x cH dimension canvas
+          if yes, new coordinates are retuned to reposition the avatar */
+
+          var wrapOccured = false;
+          if (x < -aW) {
+               wrapOccured = true;
+               x = cW;
+          }
+          if (x > cW) {
+               wrapOccured = true;
+               x = -aW;
+          }
+          if (y < -aH) {
+               wrapOccured = true;
+               y = cH;
+          }
+          if (y > cH) {
+               wrapOccured = true;
+               y = -aH;
+          }
+          return [wrapOccured, x, y];
+     };
+
+     function getRandomCoordinates (cW, cH) {
+          /*   get random  starting position. */
+          var newX;
+          var newY;
+
+          newX = Math.floor((Math.random() * cW) + 1);
+          newY = Math.floor((Math.random() * cH) + 1);
+
+          return [newX, newY];
+     }
+
+     function getNewDirection (loopNumber, dir, x, y, speedIncrement) {
+
+          if (loopNumber % 50 === 0) {
+               var dir = Math.floor((Math.random() * 8) + 1);   /* random number between one and eight, to be used to define new random direction */
+               loopNumber = 0;
+          }
+          if (dir === 1) {               /* north */
+               y -= speedIncrement;
+          }
+          else if (dir === 2) {          /* south */
+               y += speedIncrement;
+          }
+          else if (dir === 3) {          /* east */
+               x += speedIncrement;
+          }
+          else if (dir === 4) {          /* west */
+               x -= speedIncrement;
+          }
+          else if (dir === 5) {          /* northeast */
+               x += speedIncrement;
+               y -= speedIncrement;
+          }
+          else if (dir === 6) {          /* southeast */
+               x += speedIncrement;
+               y += speedIncrement;
+          }
+          else if (dir === 7) {          /* southwest */
+               x -= speedIncrement;
+               y += speedIncrement;
+          }
+          else if (dir === 8) {          /* northwest */
+               x -= speedIncrement;
+               y -= speedIncrement;
+          }
+          else {
+               console.log('error: newDirection value invalid.  value = ' + dir);
+          }
+          return [loopNumber, dir, x, y];
+     }
+
+     function collision (x1, y1, x2, y2, av_width, av_height) {
+          if (Math.abs(x1 - x2) < av_width && Math.abs(y1 - y2) < av_height) {
+
+               /* highlight the collision in a transparent yellow circle. */
+               // canvasContext.beginPath();
+               // canvasContext.fillStyle = 'rgba(255, 245, 101, 0.5)';
+               // canvasContext.ellipse(x1 + av_width / 2, y1 + av_width / 2, 30, 30, 0, 0, Math.PI * 2);
+               // canvasContext.fill();
+
+               return true;
+
+          } else {
+               return false;
+          }
+     };
+
+     function showMessage (status, count, max, color, message, horz, vert){
+          /* -----------------------------------------------------------------*/
+          if (status && count < max) {
+               canvasContext.fillStyle = color;
+               canvasContext.font="20px Verdana";
+               canvasContext.fillText(message, horz, vert, 300);
+               count++;
+          } else if (status && count === max) {
+               count = 0;
+               status = false;
+          };
+          return [status, count];
+          /* -----------------------------------------------------------------*/
+     };
+
+     window.addEventListener('keydown', function(e) {
+          /* adjust hero coordinates when a keypress is detected */
+          var key = e.keyCode;
+          if (key === 37) {             /* left keypress */
+               if (heroX < -avatarWidth) {
+                    heroX = canvasWidth;
+               } else {
+                    heroX -= speed;
+               }
+          }
+          if (key === 39) {             /* right right */
+               if (heroX > canvasWidth) {
+                    heroX = -avatarWidth;
+               } else {
+                    heroX += speed;
+               }
+          }
+          if (key === 38) {             /* up keypress */
+               if (heroY < -avatarHeight) {
+                    heroY = canvasHeight;
+               } else {
+                    heroY -= speed;
+               }
+          }
+          if (key === 40) {             /* down keypress */
+               if (heroY > canvasHeight) {
+                    heroY = -avatarHeight;
+               } else {
+                    heroY += speed;
+               }
+          }
+     });
+
+     function main(){
+
+          canvasContext.drawImage(myBackground, 0, 0);                          /* clear the background */
+
+          canvasContext.drawImage(heroImage, heroX, heroY);                     /* draw the hero */
+
+          canvasContext.drawImage(monsterImage, monsterX, monsterY);            /* draw the monster */
+          canvasContext.drawImage(goblin1Image, goblin1x, goblin1y);            /* draw the first goblin */
+          canvasContext.drawImage(goblin2Image, goblin2x, goblin2y);            /* draw the second goblin */
+
+          [loopNumber, directionMonster, monsterX, monsterY] = getNewDirection(loopNumber, directionMonster, monsterX, monsterY, monsterSpeed);
+          [loopNumber, directionGoblin1, goblin1x, goblin1y] = getNewDirection(loopNumber, directionGoblin1, goblin1x, goblin1y, goblinSpeed);
+          [loopNumber, directionGoblin2, goblin2x, goblin2y] = getNewDirection(loopNumber, directionGoblin2, goblin2x, goblin2y, goblinSpeed);
+
+          /* check to see if monster has disappeared, and if yes - get new coordinates to wrap */
+          [wrapMonster, newMonsterX, newMonsterY] = wrapOccured(canvasWidth, canvasHeight, avatarWidth, avatarHeight, monsterX, monsterY);
+          [wrapGoblin1, newGoblin1X, newGoblin1Y] = wrapOccured(canvasWidth, canvasHeight, avatarWidth, avatarHeight, goblin1x, goblin1y);
+          [wrapGoblin2, newGoblin2X, newGoblin2Y] = wrapOccured(canvasWidth, canvasHeight, avatarWidth, avatarHeight, goblin2x, goblin2y);
+
+          if (wrapMonster) {
+               monsterX = newMonsterX;
+               monsterY = newMonsterY;
+          }
+
+          if (wrapGoblin1) {
+               goblin1x = newGoblin1X;
+               goblin1y = newGoblin1Y;
+          }
+
+          if (wrapGoblin2) {
+               goblin2x = newGoblin2X;
+               goblin2y = newGoblin2Y;
+          }
+
+          if(collision(heroX, heroY, monsterX, monsterY, avatarWidth, avatarHeight)) {
+               /* reposition the monster to a random location on the board */
+               monsterX = getRandomCoordinates(canvasWidth, canvasHeight)[0]; /* random horizontal starting position of the monster */
+               monsterY = getRandomCoordinates(canvasWidth, canvasHeight)[1]; /* random vertical starting position of the monster */
+
+               shoutStatus = true;
+               powStatus = true;
+
+               score++;
+
+               if (score > maxScore) {
+                    maxScore = score;
+               };
+          }
+
+          if (powStatus && powCount <= powMax) {
+               canvasContext.drawImage(powImage, heroX + (avatarWidth - powWidth) / 2, heroY + (avatarHeight - powHeight) / 2);
+               powCount++;
+               if (powCount === powMax) {
+                    powCount = 0;
+                    powStatus = false;
+               }
+          }
+
+          if(collision(goblin1x, goblin1y, heroX, heroY, avatarWidth, avatarHeight)) {
+               /* reposition the monster to a random location on the board */
+               goblin1x = getRandomCoordinates(canvasWidth, canvasHeight)[0]; /* random horizontal starting position of the monster */
+               goblin1y = getRandomCoordinates(canvasWidth, canvasHeight)[1]; /* random vertical starting position of the monster */
+
+               bummerStatus1 = true;
+               score = 0;
+          }
+
+          if(collision(goblin2x, goblin2y, heroX, heroY, avatarWidth, avatarHeight)) {
+               /* reposition the monster to a random location on the board */
+               goblin2x = getRandomCoordinates(canvasWidth, canvasHeight)[0]; /* random horizontal starting position of the monster */
+               goblin2y = getRandomCoordinates(canvasWidth, canvasHeight)[1]; /* random vertical starting position of the monster */
+
+               bummerStatus2 = true;
+
+               score = 0;
+          }
+
+          /* update the score */
+          canvasContext.fillStyle = 'rgba(255, 245, 101, 1.0)';
+          canvasContext.font="20px Verdana";
+          canvasContext.fillText('Score: ' + score, 37, 52, 200);
+          canvasContext.fillText('Max Score: ' + maxScore, 37, 77, 200);
+
+          [shoutStatus, shoutCounter] = showMessage(shoutStatus, shoutCounter, messageMaxLoops, 'rgba(255, 245, 101, 1.0)', 'Horray!', 400, 440);
+          [bummerStatus1, bummerCounter1] = showMessage(bummerStatus1, bummerCounter1, messageMaxLoops, 'rgba(255, 245, 101, 1.0)', 'Bummer 1 - Game Reset', 37, 440);
+          [bummerStatus2, bummerCounter2] = showMessage(bummerStatus2, bummerCounter2, messageMaxLoops, 'rgba(255, 245, 101, 1.0)', 'Bummer 2 - Game Reset', 37, 440);
+
+          loopNumber++;
+
+          requestAnimationFrame(main);
+     };
+     /*----------------------------------------------------------------------------*/
+     main();
+     </script>
+</body>
+</html>
