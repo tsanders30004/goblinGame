@@ -11,68 +11,61 @@
      <script>
      "use strict";
 
+     var loopNumber = 1;
+
      var theCanvas = document.getElementById('myCanvas');
      var canvasContext = theCanvas.getContext("2d");
-
-     var heroImage = new Image();
-     heroImage.src = 'images/hero.png';
-
-     var monsterImage = new Image();
-     monsterImage.src = 'images/monster.png';
-
-     var goblin1Image = new Image();
-     goblin1Image.src = 'images/goblin.png';
-
-     var goblin2Image = new Image();
-     goblin2Image.src = 'images/goblin.png';
+     var canvasWidth = 512;   var canvasHeight = 480;
 
      var myBackground = new Image();
      myBackground.src = 'images/background.png';
 
-     var powImage = new Image();
-     powImage.src = 'images/monsterPow.png';
+     var heroImage       = new Image();    heroImage.src       = 'images/hero.png';
+     var monsterImage    = new Image();    monsterImage.src    = 'images/monster.png';
+     var goblin1Image    = new Image();    goblin1Image.src    = 'images/goblin.png';
+     var goblin2Image    = new Image();    goblin2Image.src    = 'images/goblin.png';
+     var powImage        = new Image();    powImage.src        = 'images/monsterPow.png';      var powWidth = 70;       var powHeight = 53;
+     var avatarWidth = 32;    var avatarHeight = 32;
 
-     var canvasWidth = 512;
-     var canvasHeight = 480;
-     var avatarWidth = 32;
-     var avatarHeight = 32;
-     var powWidth = 70;
-     var powHeight = 53;
+     var hero = {
+          x:             240,
+          y:             224,
+          speed:         10,
+          wrap:          false,
+          heading:       '',       /* string which shows the direction indicated by the keypress; i.e., N, S, E, W, NE, SE, SW, or NW. */
+          xUpdated:      0,   /* new horizontal position if wrap occurred */
+          yUpdated:      0    /* new vertical   position if wrap occurred */
+     };
 
-     var heroX = 240;    /* these are the coordinates necessary to center the 32x32 hero on a 512x480 grid */
-     var heroY = 224;
+     var monster = {
+          x:             getRandomCoordinates(canvasWidth, canvasHeight)[0],
+          y:             getRandomCoordinates(canvasWidth, canvasHeight)[1],
+          speed:         5,
+          wrap:          false,
+          dir:           3,
+          xUpdated:      0,   /* new horizontal position if wrap occurred */
+          yUpdated:      0    /* new vertical   position if wrap occurred */
+     };
 
-     var monsterX = getRandomCoordinates(canvasWidth, canvasHeight)[0];      /* random horizontal starting position of the monster */
-     var monsterY = getRandomCoordinates(canvasWidth, canvasHeight)[1];      /* random vertical starting position of the monster */
+     var gob1 = {
+          x:             getRandomCoordinates(canvasWidth, canvasHeight)[0],
+          y:             getRandomCoordinates(canvasWidth, canvasHeight)[1],
+          speed:         3,
+          wrap:          false,
+          dir:           3,
+          xUpdated:      0,   /* new horizontal position if wrap occurred */
+          yUpdated:      0    /* new vertical   position if wrap occurred */
+     };
 
-     var goblin1x = getRandomCoordinates(canvasWidth, canvasHeight)[0];
-     var goblin1y = getRandomCoordinates(canvasWidth, canvasHeight)[1];
-
-     var goblin2x = getRandomCoordinates(canvasWidth, canvasHeight)[0];
-     var goblin2y = getRandomCoordinates(canvasWidth, canvasHeight)[1];
-
-     var wrapMonster;
-     var newMonsterX;
-     var newMonsterY;
-
-     var wrapGoblin1;
-     var newGoblin1X;
-     var newGoblin1Y;
-
-     var wrapGoblin2;
-     var newGoblin2X;
-     var newGoblin2Y;
-
-     var speed = 25;
-
-     var loopNumber = 1;
-
-     var directionMonster = 3;
-     var directionGoblin1 = 3;
-     var directionGoblin2 = 3;
-
-     var monsterSpeed = 5;
-     var goblinSpeed = 3;
+     var gob2 = {
+          x:             getRandomCoordinates(canvasWidth, canvasHeight)[0],
+          y:             getRandomCoordinates(canvasWidth, canvasHeight)[1],
+          speed:         3,
+          wrap:          false,
+          dir:           3,
+          xUpdated:      0,   /* new horizontal position if wrap occurred */
+          yUpdated:      0    /* new vertical   position if wrap occurred */
+     };
 
      var score = 0;
      var maxScore = 0;
@@ -166,15 +159,7 @@
 
      function collision (x1, y1, x2, y2, av_width, av_height) {
           if (Math.abs(x1 - x2) < av_width && Math.abs(y1 - y2) < av_height) {
-
-               /* highlight the collision in a transparent yellow circle. */
-               // canvasContext.beginPath();
-               // canvasContext.fillStyle = 'rgba(255, 245, 101, 0.5)';
-               // canvasContext.ellipse(x1 + av_width / 2, y1 + av_width / 2, 30, 30, 0, 0, Math.PI * 2);
-               // canvasContext.fill();
-
                return true;
-
           } else {
                return false;
           }
@@ -198,74 +183,97 @@
      window.addEventListener('keydown', function(e) {
           /* adjust hero coordinates when a keypress is detected */
           var key = e.keyCode;
-          if (key === 37) {             /* left keypress */
-               if (heroX < -avatarWidth) {
-                    heroX = canvasWidth;
-               } else {
-                    heroX -= speed;
-               }
+          if (key === 37) {             /* left keypress ---> west */
+               // if (hero.x < -avatarWidth) {
+               //      hero.x = canvasWidth;
+               // } else {
+               //      hero.x -= hero.speed;
+               // }
+               hero.heading = 'W';
           }
-          if (key === 39) {             /* right right */
-               if (heroX > canvasWidth) {
-                    heroX = -avatarWidth;
-               } else {
-                    heroX += speed;
-               }
+          else if (key === 39) {             /* right right ---> east */
+               // if (hero.x > canvasWidth) {
+               //      hero.x = -avatarWidth;
+               // } else {
+               //      hero.x += hero.speed;
+               // }
+               hero.heading =  'E';
           }
-          if (key === 38) {             /* up keypress */
-               if (heroY < -avatarHeight) {
-                    heroY = canvasHeight;
-               } else {
-                    heroY -= speed;
-               }
+          else if (key === 38) {             /* up keypress ---> north */
+               // if (hero.y < -avatarHeight) {
+               //      hero.y = canvasHeight;
+               // } else {
+               //      hero.y -= hero.speed;
+               // }
+               hero.heading =  'N';
           }
-          if (key === 40) {             /* down keypress */
-               if (heroY > canvasHeight) {
-                    heroY = -avatarHeight;
-               } else {
-                    heroY += speed;
-               }
+          else if (key === 40) {             /* down keypress ---> south */
+               // if (hero.y > canvasHeight) {
+               //      hero.y = -avatarHeight;
+               // } else {
+               //      hero.y += hero.speed;
+               // }
+               hero.heading =  'S';
           }
+          hero.heading =  '';
      });
 
      function main(){
-
+          debugger;
           canvasContext.drawImage(myBackground, 0, 0);                          /* clear the background */
 
-          canvasContext.drawImage(heroImage, heroX, heroY);                     /* draw the hero */
+          /* draw hero image */
+          if (hero.heading = 'N') {
+               hero.y -= hero.speed;
+          }
+          else if (hero.heading = 'S' ) {
+               hero.y += hero.speed;
+          }
+          else if (hero.heading = 'E') {
+               hero.x += hero.speed;
 
-          canvasContext.drawImage(monsterImage, monsterX, monsterY);            /* draw the monster */
-          canvasContext.drawImage(goblin1Image, goblin1x, goblin1y);            /* draw the first goblin */
-          canvasContext.drawImage(goblin2Image, goblin2x, goblin2y);            /* draw the second goblin */
+          }
+          else if (hero.heading = 'W') {
+               hero.x -= hero.speed;
+          }
+          console.log(hero.wrap);
+          console.log(hero.x, ' ', hero.y);
+          [hero.wrap, hero.xUpdated, hero.yUpdated]      = wrapOccured(canvasWidth, canvasHeight, avatarWidth, avatarHeight, hero.x, hero.y);
+          canvasContext.drawImage(heroImage, hero.x, hero.y);                     /* draw the hero */
 
-          [loopNumber, directionMonster, monsterX, monsterY] = getNewDirection(loopNumber, directionMonster, monsterX, monsterY, monsterSpeed);
-          [loopNumber, directionGoblin1, goblin1x, goblin1y] = getNewDirection(loopNumber, directionGoblin1, goblin1x, goblin1y, goblinSpeed);
-          [loopNumber, directionGoblin2, goblin2x, goblin2y] = getNewDirection(loopNumber, directionGoblin2, goblin2x, goblin2y, goblinSpeed);
+
+          canvasContext.drawImage(monsterImage, monster.x, monster.y);            /* draw the monster */
+          canvasContext.drawImage(goblin1Image, gob1.x, gob1.y);            /* draw the first goblin */
+          canvasContext.drawImage(goblin2Image, gob2.x, gob2.y);            /* draw the second goblin */
+
+          [loopNumber, monster.dir, monster.x, monster.y]   = getNewDirection(loopNumber, monster.dir, monster.x, monster.y, monster.speed);
+          [loopNumber, gob1.dir, gob1.x, gob1.y]            = getNewDirection(loopNumber, gob1.dir, gob1.x, gob1.y, gob1.speed);
+          [loopNumber, gob2.dir, gob2.x, gob2.y]            = getNewDirection(loopNumber, gob2.dir, gob2.x, gob2.y, gob2.speed);
 
           /* check to see if monster has disappeared, and if yes - get new coordinates to wrap */
-          [wrapMonster, newMonsterX, newMonsterY] = wrapOccured(canvasWidth, canvasHeight, avatarWidth, avatarHeight, monsterX, monsterY);
-          [wrapGoblin1, newGoblin1X, newGoblin1Y] = wrapOccured(canvasWidth, canvasHeight, avatarWidth, avatarHeight, goblin1x, goblin1y);
-          [wrapGoblin2, newGoblin2X, newGoblin2Y] = wrapOccured(canvasWidth, canvasHeight, avatarWidth, avatarHeight, goblin2x, goblin2y);
+          [monster.wrap, monster.xUpdated, monster.yUpdated]      = wrapOccured(canvasWidth, canvasHeight, avatarWidth, avatarHeight, monster.x, monster.y);
+          [gob1.wrap,    gob1.xUpdated,    gob2.yUpdated]         = wrapOccured(canvasWidth, canvasHeight, avatarWidth, avatarHeight, gob1.x, gob1.y);
+          [gob2.wrap,    gob2.xUpdated,    gob2.yUpdated]         = wrapOccured(canvasWidth, canvasHeight, avatarWidth, avatarHeight, gob2.x, gob2.y);
 
-          if (wrapMonster) {
-               monsterX = newMonsterX;
-               monsterY = newMonsterY;
+          if (monster.wrap) {
+               monster.x = monster.xUpdated;
+               monster.y = monster.yUpdated;
           }
 
-          if (wrapGoblin1) {
-               goblin1x = newGoblin1X;
-               goblin1y = newGoblin1Y;
+          if (gob1.wrap) {
+               gob1.x = gob1.xUpdated;;
+               gob1.y = gob1.yUpdated;
           }
 
-          if (wrapGoblin2) {
-               goblin2x = newGoblin2X;
-               goblin2y = newGoblin2Y;
+          if (gob2.wrap) {
+               gob2.x = gob2.xUpdated;
+               gob2.y = gob2.yUpdated;
           }
 
-          if(collision(heroX, heroY, monsterX, monsterY, avatarWidth, avatarHeight)) {
+          if(collision(hero.x, hero.y, monster.x, monster.y, avatarWidth, avatarHeight)) {
                /* reposition the monster to a random location on the board */
-               monsterX = getRandomCoordinates(canvasWidth, canvasHeight)[0]; /* random horizontal starting position of the monster */
-               monsterY = getRandomCoordinates(canvasWidth, canvasHeight)[1]; /* random vertical starting position of the monster */
+               monster.x = getRandomCoordinates(canvasWidth, canvasHeight)[0]; /* random horizontal starting position of the monster */
+               monster.y = getRandomCoordinates(canvasWidth, canvasHeight)[1]; /* random vertical starting position of the monster */
 
                shoutStatus = true;
                powStatus = true;
@@ -278,7 +286,7 @@
           }
 
           if (powStatus && powCount <= powMax) {
-               canvasContext.drawImage(powImage, heroX + (avatarWidth - powWidth) / 2, heroY + (avatarHeight - powHeight) / 2);
+               canvasContext.drawImage(powImage, hero.x + (avatarWidth - powWidth) / 2, hero.y + (avatarHeight - powHeight) / 2);
                powCount++;
                if (powCount === powMax) {
                     powCount = 0;
@@ -286,19 +294,19 @@
                }
           }
 
-          if(collision(goblin1x, goblin1y, heroX, heroY, avatarWidth, avatarHeight)) {
+          if(collision(gob1.x, gob1.y, hero.x, hero.y, avatarWidth, avatarHeight)) {
                /* reposition the monster to a random location on the board */
-               goblin1x = getRandomCoordinates(canvasWidth, canvasHeight)[0]; /* random horizontal starting position of the monster */
-               goblin1y = getRandomCoordinates(canvasWidth, canvasHeight)[1]; /* random vertical starting position of the monster */
+               gob1.x = getRandomCoordinates(canvasWidth, canvasHeight)[0]; /* random horizontal starting position of the monster */
+               gob1.y = getRandomCoordinates(canvasWidth, canvasHeight)[1]; /* random vertical starting position of the monster */
 
                bummerStatus1 = true;
                score = 0;
           }
 
-          if(collision(goblin2x, goblin2y, heroX, heroY, avatarWidth, avatarHeight)) {
+          if(collision(gob2.x, gob2.y, hero.x, hero.y, avatarWidth, avatarHeight)) {
                /* reposition the monster to a random location on the board */
-               goblin2x = getRandomCoordinates(canvasWidth, canvasHeight)[0]; /* random horizontal starting position of the monster */
-               goblin2y = getRandomCoordinates(canvasWidth, canvasHeight)[1]; /* random vertical starting position of the monster */
+               gob2.x = getRandomCoordinates(canvasWidth, canvasHeight)[0]; /* random horizontal starting position of the monster */
+               gob2.y = getRandomCoordinates(canvasWidth, canvasHeight)[1]; /* random vertical starting position of the monster */
 
                bummerStatus2 = true;
 
@@ -316,7 +324,7 @@
           [bummerStatus2, bummerCounter2] = showMessage(bummerStatus2, bummerCounter2, messageMaxLoops, 'rgba(255, 245, 101, 1.0)', 'Bummer 2 - Game Reset', 37, 440);
 
           loopNumber++;
-
+          debugger;
           requestAnimationFrame(main);
      };
      /*----------------------------------------------------------------------------*/
