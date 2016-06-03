@@ -6,7 +6,7 @@
 </head>
 
 <body>
-     <canvas id="myCanvas" width="512" height="480"></canvas>
+     <canvas id="myCanvas" width="640" height="480"></canvas>
      ​
      <script>
      "use strict";
@@ -15,26 +15,22 @@
 
      var theCanvas = document.getElementById('myCanvas');
      var canvasContext = theCanvas.getContext("2d");
-     var canvasWidth = 512;   var canvasHeight = 480;
+     var canvasWidth = 640;   var canvasHeight = 480;
 
      var myBackground = new Image();
-     myBackground.src = 'images/background.png';
+     myBackground.src = 'images/gotham_640x480.jpg';
 
-     var heroImage       = new Image();    heroImage.src       = 'images/hero.png';
-     var monsterImage    = new Image();    monsterImage.src    = 'images/monster.png';
-     var goblin1Image    = new Image();    goblin1Image.src    = 'images/goblin.png';
-     var goblin2Image    = new Image();    goblin2Image.src    = 'images/goblin.png';
-     var powImage        = new Image();    powImage.src        = 'images/monsterPow.png';      var powWidth = 70;       var powHeight = 53;
-     var avatarWidth = 32;    var avatarHeight = 32;
+     var heroImage       = new Image();    heroImage.src       = 'images/batman80x48.png';
+     var monsterImage    = new Image();    monsterImage.src    = 'images/joker.png';
+     var goblin1Image    = new Image();    goblin1Image.src    = 'images/penguin.png';
+     var goblin2Image    = new Image();    goblin2Image.src    = 'images/catwoman.png';
+     var powImage        = new Image();    powImage.src        = 'images/monsterPow110x83.png';      var powWidth = 110;       var powHeight = 83;
+     var avatarWidth = 80;    var avatarHeight = 80;
 
      var hero = {
-          x:             240,
-          y:             224,
-          speed:         10,
-          wrap:          false,
-          heading:       '',       /* string which shows the direction indicated by the keypress; i.e., N, S, E, W, NE, SE, SW, or NW. */
-          xUpdated:      0,   /* new horizontal position if wrap occurred */
-          yUpdated:      0    /* new vertical   position if wrap occurred */
+          x:        240,
+          y:        224,
+          speed:    10
      };
 
      var monster = {
@@ -183,72 +179,51 @@
      window.addEventListener('keydown', function(e) {
           /* adjust hero coordinates when a keypress is detected */
           var key = e.keyCode;
-          if (key === 37) {             /* left keypress ---> west */
-               // if (hero.x < -avatarWidth) {
-               //      hero.x = canvasWidth;
-               // } else {
-               //      hero.x -= hero.speed;
-               // }
-               hero.heading = 'W';
+          if (key === 37) {             /* left keypress */
+               if (hero.x < -avatarWidth) {
+                    hero.x = canvasWidth;
+               } else {
+                    hero.x -= hero.speed;
+               }
           }
-          else if (key === 39) {             /* right right ---> east */
-               // if (hero.x > canvasWidth) {
-               //      hero.x = -avatarWidth;
-               // } else {
-               //      hero.x += hero.speed;
-               // }
-               hero.heading =  'E';
+          if (key === 39) {             /* right right */
+               if (hero.x > canvasWidth) {
+                    hero.x = -avatarWidth;
+               } else {
+                    hero.x += hero.speed;
+               }
           }
-          else if (key === 38) {             /* up keypress ---> north */
-               // if (hero.y < -avatarHeight) {
-               //      hero.y = canvasHeight;
-               // } else {
-               //      hero.y -= hero.speed;
-               // }
-               hero.heading =  'N';
+          if (key === 38) {             /* up keypress */
+               if (hero.y < -avatarHeight) {
+                    hero.y = canvasHeight;
+               } else {
+                    hero.y -= hero.speed;
+               }
           }
-          else if (key === 40) {             /* down keypress ---> south */
-               // if (hero.y > canvasHeight) {
-               //      hero.y = -avatarHeight;
-               // } else {
-               //      hero.y += hero.speed;
-               // }
-               hero.heading =  'S';
+          if (key === 40) {             /* down keypress */
+               if (hero.y > canvasHeight) {
+                    hero.y = -avatarHeight;
+               } else {
+                    hero.y += hero.speed;
+               }
           }
-          hero.heading =  '';
      });
 
      function main(){
-          debugger;
+
           canvasContext.drawImage(myBackground, 0, 0);                          /* clear the background */
 
-          /* draw hero image */
-          if (hero.heading = 'N') {
-               hero.y -= hero.speed;
-          }
-          else if (hero.heading = 'S' ) {
-               hero.y += hero.speed;
-          }
-          else if (hero.heading = 'E') {
-               hero.x += hero.speed;
-
-          }
-          else if (hero.heading = 'W') {
-               hero.x -= hero.speed;
-          }
-          console.log(hero.wrap);
-          console.log(hero.x, ' ', hero.y);
-          [hero.wrap, hero.xUpdated, hero.yUpdated]      = wrapOccured(canvasWidth, canvasHeight, avatarWidth, avatarHeight, hero.x, hero.y);
           canvasContext.drawImage(heroImage, hero.x, hero.y);                     /* draw the hero */
-
 
           canvasContext.drawImage(monsterImage, monster.x, monster.y);            /* draw the monster */
           canvasContext.drawImage(goblin1Image, gob1.x, gob1.y);            /* draw the first goblin */
           canvasContext.drawImage(goblin2Image, gob2.x, gob2.y);            /* draw the second goblin */
 
-          [loopNumber, monster.dir, monster.x, monster.y]   = getNewDirection(loopNumber, monster.dir, monster.x, monster.y, monster.speed);
-          [loopNumber, gob1.dir, gob1.x, gob1.y]            = getNewDirection(loopNumber, gob1.dir, gob1.x, gob1.y, gob1.speed);
-          [loopNumber, gob2.dir, gob2.x, gob2.y]            = getNewDirection(loopNumber, gob2.dir, gob2.x, gob2.y, gob2.speed);
+          debugger;
+
+          [loopNumber, monster.dir,     monster.x,     monster.y]   = getNewDirection(loopNumber, monster.dir,     monster.x,     monster.y,     monster.speed);
+          [loopNumber, gob1.dir,        gob1.x,        gob1.y]      = getNewDirection(loopNumber, gob1.dir,        gob1.x,        gob1.y,        gob1.speed);
+          [loopNumber, gob2.dir,        gob2.x,        gob2.y]      = getNewDirection(loopNumber, gob2.dir,        gob2.x,        gob2.y,        gob2.speed);
 
           /* check to see if monster has disappeared, and if yes - get new coordinates to wrap */
           [monster.wrap, monster.xUpdated, monster.yUpdated]      = wrapOccured(canvasWidth, canvasHeight, avatarWidth, avatarHeight, monster.x, monster.y);
@@ -319,12 +294,12 @@
           canvasContext.fillText('Score: ' + score, 37, 52, 200);
           canvasContext.fillText('Max Score: ' + maxScore, 37, 77, 200);
 
-          [shoutStatus, shoutCounter] = showMessage(shoutStatus, shoutCounter, messageMaxLoops, 'rgba(255, 245, 101, 1.0)', 'Horray!', 400, 440);
-          [bummerStatus1, bummerCounter1] = showMessage(bummerStatus1, bummerCounter1, messageMaxLoops, 'rgba(255, 245, 101, 1.0)', 'Bummer 1 - Game Reset', 37, 440);
-          [bummerStatus2, bummerCounter2] = showMessage(bummerStatus2, bummerCounter2, messageMaxLoops, 'rgba(255, 245, 101, 1.0)', 'Bummer 2 - Game Reset', 37, 440);
+          [shoutStatus, shoutCounter] = showMessage(shoutStatus, shoutCounter, messageMaxLoops, 'rgba(255, 245, 101, 1.0)', 'Zap! Klonk! Kabing!', 400, 440);
+          [bummerStatus1, bummerCounter1] = showMessage(bummerStatus1, bummerCounter1, messageMaxLoops, 'rgba(255, 245, 101, 1.0)', 'Knocked Out by the Penguin!', 37, 420);
+          [bummerStatus2, bummerCounter2] = showMessage(bummerStatus2, bummerCounter2, messageMaxLoops, 'rgba(255, 245, 101, 1.0)', 'Knocked Out by Catwoman!', 37, 440);
 
           loopNumber++;
-          debugger;
+
           requestAnimationFrame(main);
      };
      /*----------------------------------------------------------------------------*/
