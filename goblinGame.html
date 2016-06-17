@@ -32,7 +32,7 @@
           y:        224,
           horz:     0,
           vert:     0,
-          speed:    10
+          speed:    4
      };
 
      var monster = {
@@ -333,8 +333,8 @@
           [bummerStatus2, bummerCounter2] = showMessage(bummerStatus2, bummerCounter2, messageMaxLoops, 'rgba(255, 245, 101, 1.0)', 'Knocked Out by Catwoman!', 37, 440);
 
           /* update hero location */
-          hero.x += hero.horz;
-          hero.x += hero.vert;
+          hero.x += hero.horz * hero.speed;
+          hero.x += hero.vert * hero.speed;
 
           loopNumber++;
 
