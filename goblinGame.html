@@ -2,7 +2,9 @@
 <html>
 <head>
      <meta charset="utf-8">
-     <title>Goblin Game</title>
+     <title>Batman vs. Joker</title>
+
+     <link href="https://fonts.googleapis.com/css?family=Shadows+Into+Light" rel="stylesheet" type="text/css">
 </head>
 
 <body>
@@ -20,19 +22,25 @@
      var myBackground = new Image();
      myBackground.src = 'images/gotham_640x480.jpg';
 
-     var heroImage       = new Image();    heroImage.src       = 'images/batman80x48.png';
+     var heroImage       = new Image();    heroImage.src       = 'images/batman150x88.png';
      var monsterImage    = new Image();    monsterImage.src    = 'images/joker.png';
      var goblin1Image    = new Image();    goblin1Image.src    = 'images/penguin.png';
      var goblin2Image    = new Image();    goblin2Image.src    = 'images/catwoman.png';
-     var powImage        = new Image();    powImage.src        = 'images/monsterPow110x83.png';      var powWidth = 110;       var powHeight = 83;
+     var powImage        = new Image();    powImage.src        = 'images/pow400x302.png';      var powWidth = 400;    var powHeight = 302;
+
      var avatarWidth = 80;    var avatarHeight = 80;
 
      var hero = {
-          x:        240,
-          y:        224,
-          horz:     0,
-          vert:     0,
-          speed:    4
+          x:             240,
+          y:             224,
+          speed:         4,
+          wrap:          false,
+          horz:          0,
+          vert:          0,
+          xUpdated:      0,
+          yUpdated:      0,
+          avatarWidth:   150,
+          avatarHeight:  88
      };
 
      var monster = {
@@ -77,7 +85,7 @@
      var messageMaxLoops = 100;
 
      var powCount = 0;
-     var powMax = 20;
+     var powMax = 35;
      var powStatus = false;
 
      function wrapOccured (cW, cH, aW, aH, x, y) {
@@ -167,7 +175,11 @@
           /* -----------------------------------------------------------------*/
           if (status && count < max) {
                canvasContext.fillStyle = color;
-               canvasContext.font="20px Verdana";
+               // canvasContext.font="20px Verdana";
+canvasContext.font="20px 'Shadows Into Light'";
+
+
+
                canvasContext.fillText(message, horz, vert, 300);
                count++;
           } else if (status && count === max) {
@@ -182,32 +194,23 @@
           /* adjust hero coordinates when a keypress is detected */
           var key = e.keyCode;
           if (key === 37) {             /* left keypress */
-               if (hero.x < -avatarWidth) {
-                    hero.x = canvasWidth;
-               } else {
-                    hero.horz = -1;
-               }
+
+               hero.horz = -1;
+
           }
           if (key === 39) {             /* right right */
-               if (hero.x > canvasWidth) {
-                    hero.x = -avatarWidth;
-               } else {
-                    hero.horz = 1;
-               }
+
+               hero.horz = 1;
+
           }
           if (key === 38) {             /* up keypress */
-               if (hero.y < -avatarHeight) {
-                    hero.y = canvasHeight;
-               } else {
-                    hero.vert = -1;
-               }
+
+               hero.vert = -1;
+
           }
           if (key === 40) {             /* down keypress */
-               if (hero.y > canvasHeight) {
-                    hero.y = -avatarHeight;
-               } else {
-                    hero.vert = 1;
-               }
+
+               hero.vert = 1;
           }
      });
 
@@ -244,7 +247,6 @@
           }
      });
 
-
      function main(){
 
           canvasContext.drawImage(myBackground, 0, 0);                          /* clear the background */
@@ -260,10 +262,15 @@
           [loopNumber, gob2.dir,        gob2.x,        gob2.y]      = getNewDirection(loopNumber, gob2.dir,        gob2.x,        gob2.y,        gob2.speed);
 
           /* check to see if monster has disappeared, and if yes - get new coordinates to wrap */
-          [monster.wrap, monster.xUpdated, monster.yUpdated]      = wrapOccured(canvasWidth, canvasHeight, avatarWidth, avatarHeight, monster.x, monster.y);
-          [gob1.wrap,    gob1.xUpdated,    gob2.yUpdated]         = wrapOccured(canvasWidth, canvasHeight, avatarWidth, avatarHeight, gob1.x, gob1.y);
-          [gob2.wrap,    gob2.xUpdated,    gob2.yUpdated]         = wrapOccured(canvasWidth, canvasHeight, avatarWidth, avatarHeight, gob2.x, gob2.y);
+          [hero.wrap,    hero.xUpdated,      hero.yUpdated]           = wrapOccured(canvasWidth, canvasHeight, hero.avatarWidth,  hero.avatarHeight,  hero.x, hero.y);
+          [monster.wrap, monster.xUpdated,   monster.yUpdated]        = wrapOccured(canvasWidth, canvasHeight, avatarWidth,       avatarHeight,       monster.x, monster.y);
+          [gob1.wrap,    gob1.xUpdated,      gob2.yUpdated]           = wrapOccured(canvasWidth, canvasHeight, avatarWidth,       avatarHeight,       gob1.x, gob1.y);
+          [gob2.wrap,    gob2.xUpdated,      gob2.yUpdated]           = wrapOccured(canvasWidth, canvasHeight, avatarWidth,       avatarHeight,       gob2.x, gob2.y);
 
+          if (hero.wrap) {
+               hero.x = hero.xUpdated;
+               hero.y = hero.yUpdated;
+          }
           if (monster.wrap) {
                monster.x = monster.xUpdated;
                monster.y = monster.yUpdated;
@@ -295,7 +302,7 @@
           }
 
           if (powStatus && powCount <= powMax) {
-               canvasContext.drawImage(powImage, hero.x + (avatarWidth - powWidth) / 2, hero.y + (avatarHeight - powHeight) / 2);
+               canvasContext.drawImage(powImage, hero.x + (hero.avatarWidth - powWidth) / 2, hero.y + (hero.avatarHeight - powHeight) / 2);
                powCount++;
                if (powCount === powMax) {
                     powCount = 0;
@@ -323,18 +330,18 @@
           }
 
           /* update the score */
-          canvasContext.fillStyle = 'rgba(255, 245, 101, 1.0)';
-          canvasContext.font="20px Verdana";
+          canvasContext.fillStyle = 'rgba(255, 255, 255, 0.7)';
+          canvasContext.font="20px 'Shadows Into Light'";
           canvasContext.fillText('Score: ' + score, 37, 52, 200);
           canvasContext.fillText('Max Score: ' + maxScore, 37, 77, 200);
 
-          [shoutStatus, shoutCounter]   = showMessage(shoutStatus, shoutCounter, messageMaxLoops, 'rgba(255, 245, 101, 1.0)', 'Zap! Klonk! Kabing!', 400, 440);
-          [bummerStatus1, bummerCounter1] = showMessage(bummerStatus1, bummerCounter1, messageMaxLoops, 'rgba(255, 245, 101, 1.0)', 'Knocked Out by the Penguin!', 37, 420);
-          [bummerStatus2, bummerCounter2] = showMessage(bummerStatus2, bummerCounter2, messageMaxLoops, 'rgba(255, 245, 101, 1.0)', 'Knocked Out by Catwoman!', 37, 440);
+          // [shoutStatus, shoutCounter]   = showMessage(shoutStatus, shoutCounter, messageMaxLoops, 'rgba(255, 245, 101, 1.0)', 'Zap! Klonk! Kabing!', 400, 440);
+          [bummerStatus1, bummerCounter1] = showMessage(bummerStatus1, bummerCounter1, messageMaxLoops, 'rgba(255, 255, 255, 0.7)', 'Knocked Out by the Penguin!', 37, 420);
+          [bummerStatus2, bummerCounter2] = showMessage(bummerStatus2, bummerCounter2, messageMaxLoops, 'rgba(255, 255, 255, 0.7)', 'Knocked Out by Catwoman!', 37, 440);
 
           /* update hero location */
           hero.x += hero.horz * hero.speed;
-          hero.x += hero.vert * hero.speed;
+          hero.y += hero.vert * hero.speed;
 
           loopNumber++;
 
