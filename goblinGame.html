@@ -30,6 +30,8 @@
      var hero = {
           x:        240,
           y:        224,
+          horz:     0,
+          vert:     0,
           speed:    10
      };
 
@@ -183,31 +185,65 @@
                if (hero.x < -avatarWidth) {
                     hero.x = canvasWidth;
                } else {
-                    hero.x -= hero.speed;
+                    hero.horz = -1;
                }
           }
           if (key === 39) {             /* right right */
                if (hero.x > canvasWidth) {
                     hero.x = -avatarWidth;
                } else {
-                    hero.x += hero.speed;
+                    hero.horz = 1;
                }
           }
           if (key === 38) {             /* up keypress */
                if (hero.y < -avatarHeight) {
                     hero.y = canvasHeight;
                } else {
-                    hero.y -= hero.speed;
+                    hero.vert = -1;
                }
           }
           if (key === 40) {             /* down keypress */
                if (hero.y > canvasHeight) {
                     hero.y = -avatarHeight;
                } else {
-                    hero.y += hero.speed;
+                    hero.vert = 1;
                }
           }
      });
+
+     window.addEventListener('keyup', function(e) {
+          /* adjust hero coordinates when a keypress is detected */
+          var key = e.keyCode;
+          if (key === 37) {             /* left keypress */
+               if (hero.x < -avatarWidth) {
+                    hero.x = canvasWidth;
+               } else {
+                    hero.horz = 0;
+               }
+          }
+          if (key === 39) {             /* right right */
+               if (hero.x > canvasWidth) {
+                    hero.x = -avatarWidth;
+               } else {
+                    hero.horz = 0;
+               }
+          }
+          if (key === 38) {             /* up keypress */
+               if (hero.y < -avatarHeight) {
+                    hero.y = canvasHeight;
+               } else {
+                    hero.vert = 0;
+               }
+          }
+          if (key === 40) {             /* down keypress */
+               if (hero.y > canvasHeight) {
+                    hero.y = -avatarHeight;
+               } else {
+                    hero.vert = 0;
+               }
+          }
+     });
+
 
      function main(){
 
@@ -218,8 +254,6 @@
           canvasContext.drawImage(monsterImage, monster.x, monster.y);            /* draw the monster */
           canvasContext.drawImage(goblin1Image, gob1.x, gob1.y);            /* draw the first goblin */
           canvasContext.drawImage(goblin2Image, gob2.x, gob2.y);            /* draw the second goblin */
-
-          debugger;
 
           [loopNumber, monster.dir,     monster.x,     monster.y]   = getNewDirection(loopNumber, monster.dir,     monster.x,     monster.y,     monster.speed);
           [loopNumber, gob1.dir,        gob1.x,        gob1.y]      = getNewDirection(loopNumber, gob1.dir,        gob1.x,        gob1.y,        gob1.speed);
@@ -294,9 +328,13 @@
           canvasContext.fillText('Score: ' + score, 37, 52, 200);
           canvasContext.fillText('Max Score: ' + maxScore, 37, 77, 200);
 
-          [shoutStatus, shoutCounter] = showMessage(shoutStatus, shoutCounter, messageMaxLoops, 'rgba(255, 245, 101, 1.0)', 'Zap! Klonk! Kabing!', 400, 440);
+          [shoutStatus, shoutCounter]   = showMessage(shoutStatus, shoutCounter, messageMaxLoops, 'rgba(255, 245, 101, 1.0)', 'Zap! Klonk! Kabing!', 400, 440);
           [bummerStatus1, bummerCounter1] = showMessage(bummerStatus1, bummerCounter1, messageMaxLoops, 'rgba(255, 245, 101, 1.0)', 'Knocked Out by the Penguin!', 37, 420);
           [bummerStatus2, bummerCounter2] = showMessage(bummerStatus2, bummerCounter2, messageMaxLoops, 'rgba(255, 245, 101, 1.0)', 'Knocked Out by Catwoman!', 37, 440);
+
+          /* update hero location */
+          hero.x += hero.horz;
+          hero.x += hero.vert;
 
           loopNumber++;
 
